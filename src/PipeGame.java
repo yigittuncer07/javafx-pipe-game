@@ -43,6 +43,10 @@ public class PipeGame extends Application {
     private static final Image pipeV = new Image("images/PipeV.png", 120, 120, false, false);
     private static final Image starterH = new Image("images/StarterH.png", 120, 120, false, false);
     private static final Image starterV = new Image("images/StarterV.png", 120, 120, false, false);
+    private static final Image pipeStatic00 = new Image("images/00Static.png", 120, 120, false, false);
+    private static final Image pipeStatic01 = new Image("images/01Static.png", 120, 120, false, false);
+    private static final Image pipeStatic10 = new Image("images/10Static.png", 120, 120, false, false);
+    private static final Image pipeStatic11 = new Image("images/11Static.png", 120, 120, false, false);
 
 
     @Override
@@ -53,7 +57,7 @@ public class PipeGame extends Application {
         comboBox.setValue("Select Level");
         comboBox.getItems().add("Level 1");
         for (int i = 2; i <= folderSize(new File("src/levels")); i++) {
-            comboBox.getItems().add("(LOCKED) Level " + i);
+            comboBox.getItems().add("Level " + i);
         }
 
         //Create labels
@@ -104,6 +108,7 @@ public class PipeGame extends Application {
             //Sets the grid according to the level
             setGrid(level);
         });
+
 
         gridPane.setOnMousePressed(event1 -> {
             int x1 = (int) event1.getSceneX();
@@ -273,11 +278,28 @@ public class PipeGame extends Application {
                         if (property.equals("Vertical")) {
                             gridPane.add(new ImageView(pipeStaticV), x, y);
                             imageViews[x][y] = new ImageView(pipeStaticV);
-                        } else {
+                        } else if (property.equals("Horizontal")) {
                             gridPane.add(new ImageView(pipeStaticH), x, y);
                             imageViews[x][y] = new ImageView(pipeStaticH);
+                        } else if (property.equals("01")) {
+                            ImageView imageView2 = new ImageView(pipeStatic01);
+                            gridPane.add(imageView2, x, y);
+                            imageViews[x][y] = imageView2;
+                        } else if (property.equals("00")) {
+                            ImageView imageView2 = new ImageView(pipeStatic00);
+                            gridPane.add(imageView2, x, y);
+                            imageViews[x][y] = imageView2;
+                        } else if (property.equals("11")) {
+                            ImageView imageView2 = new ImageView(pipeStatic11);
+                            gridPane.add(imageView2, x, y);
+                            imageViews[x][y] = imageView2;
+                        } else if (property.equals("10")) {
+                            ImageView imageView2 = new ImageView(pipeStatic10);
+                            gridPane.add(imageView2, x, y);
+                            imageViews[x][y] = imageView2;
                         }
                         break;
+
                 }
             }
         }
@@ -311,7 +333,8 @@ public class PipeGame extends Application {
     private static boolean isTileMovable(int x1, int y1, int x2, int y2) {
         Image startImage = getImageType(x1, y1);
         Image endImage = getImageType(x2, y2);
-        boolean b = !(startImage.equals(pipeStaticH) || startImage.equals(pipeStaticV) || startImage.equals(starterH) || startImage.equals(starterV) || startImage.equals(endH) || startImage.equals(endV) || startImage.equals(emptyFree)) && endImage.equals(emptyFree);
+        assert startImage != null;
+        boolean b = !(startImage.equals(pipeStaticH) || startImage.equals(pipeStaticV) || startImage.equals(starterH) || startImage.equals(starterV) || startImage.equals(endH) || startImage.equals(endV) || startImage.equals(emptyFree)) || startImage.equals(pipeStatic01) || startImage.equals(pipeStatic11) || startImage.equals(pipeStatic10) || startImage.equals(pipeStatic00) && Objects.equals(endImage, emptyFree);
         if ((Math.abs(x1 - x2) == 1) && (y1 - y2 == 0)) {
             return b;
 
@@ -367,4 +390,8 @@ public class PipeGame extends Application {
         return null;
     }
 
+    private static boolean isWon() {
+
+        return true;
+    }
 }
