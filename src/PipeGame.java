@@ -11,12 +11,24 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Line;
 import javafx.stage.Stage;
+import sun.invoke.empty.Empty;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Scanner;
 
 public class PipeGame extends Application {
+
+    static int end;
+    //4*4 map array
+    static Tile[][] mp = new Tile[4][4];
+    static ArrayList<Integer> ans = new ArrayList<Integer>();
+    static ArrayList<Integer> unused = new ArrayList<Integer>();
+    static File file;
+    static String tx;
+    static Scanner sc;
 
     private static ImageView[][] imageViews = new ImageView[4][4];
 
@@ -29,24 +41,24 @@ public class PipeGame extends Application {
     private static Label movesLabel = new Label("Number of moves: " + numberOfMoves);
 
 
-    private static final Image corner00 = new Image("images/00.png", 120, 120, false, false);
-    private static final Image corner01 = new Image("images/01.png", 120, 120, false, false);
-    private static final Image corner10 = new Image("images/10.png", 120, 120, false, false);
-    private static final Image corner11 = new Image("images/11.png", 120, 120, false, false);
-    private static final Image empty = new Image("images/Empty.png", 120, 120, false, false);
-    private static final Image emptyFree = new Image("images/EmptyFree.png", 120, 120, false, false);
-    private static final Image endH = new Image("images/EndH.png", 120, 120, false, false);
-    private static final Image endV = new Image("images/EndV.png", 120, 120, false, false);
-    private static final Image pipeH = new Image("images/PipeH.png", 120, 120, false, false);
-    private static final Image pipeStaticH = new Image("images/PipeStaticH.png", 120, 120, false, false);
-    private static final Image pipeStaticV = new Image("images/PipeStaticV.png", 120, 120, false, false);
-    private static final Image pipeV = new Image("images/PipeV.png", 120, 120, false, false);
-    private static final Image starterH = new Image("images/StarterH.png", 120, 120, false, false);
-    private static final Image starterV = new Image("images/StarterV.png", 120, 120, false, false);
-    private static final Image pipeStatic00 = new Image("images/00Static.png", 120, 120, false, false);
-    private static final Image pipeStatic01 = new Image("images/01Static.png", 120, 120, false, false);
-    private static final Image pipeStatic10 = new Image("images/10Static.png", 120, 120, false, false);
-    private static final Image pipeStatic11 = new Image("images/11Static.png", 120, 120, false, false);
+    static final Image corner00 = new Image("images/00.png", 120, 120, false, false);
+    static final Image corner01 = new Image("images/01.png", 120, 120, false, false);
+    static final Image corner10 = new Image("images/10.png", 120, 120, false, false);
+    static final Image corner11 = new Image("images/11.png", 120, 120, false, false);
+    static final Image empty = new Image("images/Empty.png", 120, 120, false, false);
+    static final Image emptyFree = new Image("images/EmptyFree.png", 120, 120, false, false);
+    static final Image endH = new Image("images/EndH.png", 120, 120, false, false);
+    static final Image endV = new Image("images/EndV.png", 120, 120, false, false);
+    static final Image pipeH = new Image("images/PipeH.png", 120, 120, false, false);
+    static final Image pipeStaticH = new Image("images/PipeStaticH.png", 120, 120, false, false);
+    static final Image pipeStaticV = new Image("images/PipeStaticV.png", 120, 120, false, false);
+    static final Image pipeV = new Image("images/PipeV.png", 120, 120, false, false);
+    static final Image starterH = new Image("images/StarterH.png", 120, 120, false, false);
+   static final Image starterV = new Image("images/StarterV.png", 120, 120, false, false);
+    static final Image pipeStatic00 = new Image("images/00Static.png", 120, 120, false, false);
+    static final Image pipeStatic01 = new Image("images/01Static.png", 120, 120, false, false);
+    static final Image pipeStatic10 = new Image("images/10Static.png", 120, 120, false, false);
+    static final Image pipeStatic11 = new Image("images/11Static.png", 120, 120, false, false);
 
 
     @Override
@@ -67,7 +79,7 @@ public class PipeGame extends Application {
         hBox.getChildren().addAll(comboBox, displayLabel, movesLabel);
         hBox.setSpacing(40);
 
-        //Create grid pane
+       //Create grid pane
         gridPane.setGridLinesVisible(true);
 
         //Create vBox
@@ -147,7 +159,7 @@ public class PipeGame extends Application {
 
     }
 
-    public static void main(String[] args) {
+    public static void setGame(String[] args) {
         launch(args);
     }
 
@@ -393,5 +405,187 @@ public class PipeGame extends Application {
     private static boolean isWon() {
 
         return true;
+    }
+
+    public static void gameEnded() {
+        int f;
+        try {
+            while (true) {
+                f = ans.get(ans.size() - 1);
+                if (mp[f % 4][f / 4].connections[unused.get(unused.size() - 1)] == 'u') {
+                    if (mp[f % 4][(f / 4) - 1].connections[0] == 'd') {
+                        ans.add(f - 4);
+                        unused.add(1);
+                    } else if (mp[f % 4][(f / 4) - 1].connections[1] == 'd') {
+                        ans.add(f - 4);
+                        unused.add(0);
+                    } else {
+                        break;
+                    }
+                } else if (mp[f % 4][f / 4].connections[unused.get(unused.size() - 1)] == 'd') {
+                    if (mp[f % 4][(f / 4) + 1].connections[0] == 'u') {
+                        ans.add(f + 4);
+                        unused.add(1);
+                    } else if (mp[f % 4][(f / 4) + 1].connections[1] == 'u') {
+                        ans.add(f + 4);
+                        unused.add(0);
+                    } else {
+                        break;
+                    }
+                } else if (mp[f % 4][f / 4].connections[unused.get(unused.size() - 1)] == 'l') {
+                    if (mp[(f % 4) - 1][f / 4].connections[0] == 'r') {
+                        ans.add(f - 1);
+                        unused.add(1);
+                    } else if (mp[(f % 4) - 1][f / 4].connections[1] == 'r') {
+                        ans.add(f - 1);
+                        unused.add(0);
+                    } else {
+                        break;
+                    }
+                } else if (mp[f % 4][f / 4].connections[unused.get(unused.size() - 1)] == 'r') {
+                    if (mp[(f % 4) + 1][f / 4].connections[0] == 'l') {
+                        ans.add(f + 1);
+                        unused.add(1);
+                    } else if (mp[(f % 4) + 1][f / 4].connections[1] == 'l') {
+                        ans.add(f + 1);
+                        unused.add(0);
+                    } else {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
+        } catch (Exception e) {
+
+        }
+
+    }
+
+    public static void game() {
+        gameEnded();
+        while (!(ans.contains(end))) {
+            Scanner scin = new Scanner(System.in);
+            int fi = scin.nextInt();
+            int la = scin.nextInt();
+            fi--;
+            la--;
+            if ((mp[fi % 4][fi / 4].isMoveable) && (mp[la % 4][la / 4].isFree) && (((Math.abs((fi % 4) - (la % 4)) == 1) && ((fi / 4) == (la / 4)) || ((Math.abs((fi / 4) - (la / 4)) == 1) && ((fi % 4) == (la % 4)))))) {
+                Tile temp = mp[fi % 4][fi / 4];
+                mp[fi % 4][fi / 4] = mp[la % 4][la / 4];
+                mp[la % 4][la / 4] = temp;
+                System.out.println("U R fucking awesome");
+                if (ans.contains(fi)) {
+                    while (ans.contains(fi)) {
+                        unused.remove(ans.size() - 1);
+                        ans.remove(ans.size() - 1);
+                    }
+                }
+            } else {
+                System.out.println("Invalid move");
+            }
+            gameEnded();
+        }
+        System.out.println("Next Level");
+        ans.clear();
+        unused.clear();
+    }
+
+    public static void gameEnded() {
+        int f;
+        try {
+            while (true) {
+                f = ans.get(ans.size() - 1);
+                if (mp[f % 4][f / 4].connections[unused.get(unused.size() - 1)] == 'u') {
+                    if (mp[f % 4][(f / 4) - 1].connections[0] == 'd') {
+                        ans.add(f - 4);
+                        unused.add(1);
+                    } else if (mp[f % 4][(f / 4) - 1].connections[1] == 'd') {
+                        ans.add(f - 4);
+                        unused.add(0);
+                    } else {
+                        break;
+                    }
+                } else if (mp[f % 4][f / 4].connections[unused.get(unused.size() - 1)] == 'd') {
+                    if (mp[f % 4][(f / 4) + 1].connections[0] == 'u') {
+                        ans.add(f + 4);
+                        unused.add(1);
+                    } else if (mp[f % 4][(f / 4) + 1].connections[1] == 'u') {
+                        ans.add(f + 4);
+                        unused.add(0);
+                    } else {
+                        break;
+                    }
+                } else if (mp[f % 4][f / 4].connections[unused.get(unused.size() - 1)] == 'l') {
+                    if (mp[(f % 4) - 1][f / 4].connections[0] == 'r') {
+                        ans.add(f - 1);
+                        unused.add(1);
+                    } else if (mp[(f % 4) - 1][f / 4].connections[1] == 'r') {
+                        ans.add(f - 1);
+                        unused.add(0);
+                    } else {
+                        break;
+                    }
+                } else if (mp[f % 4][f / 4].connections[unused.get(unused.size() - 1)] == 'r') {
+                    if (mp[(f % 4) + 1][f / 4].connections[0] == 'l') {
+                        ans.add(f + 1);
+                        unused.add(1);
+                    } else if (mp[(f % 4) + 1][f / 4].connections[1] == 'l') {
+                        ans.add(f + 1);
+                        unused.add(0);
+                    } else {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
+        } catch (Exception e) {
+
+        }
+
+
+    }
+
+    public static void setGame() throws FileNotFoundException {
+        // this a value will be needed for tile id
+        int a;
+        for (int i = 0; i < 100; i++) {
+            tx = "src/CSE1242_spring2022_project_level" + (i + 1) + ".txt";
+            file = new File(tx);
+            sc = new Scanner(file);
+            //setting the map
+            while (sc.hasNextLine()) {
+                a = 0;
+                String[] tp = (sc.nextLine()).split(",");
+                //System.out.println(tp[1]);
+                if (tp.length < 3) {
+                    continue;
+                }
+                a = Integer.parseInt(tp[0]);
+                a--;
+                if (tp[1].equals("Pipe")) {
+                    mp[a % 4][a / 4] = new CornerPipe(tp[2], true);
+                } else if (tp[1].equals("PipeStatic")) {
+                    mp[a % 4][a / 4] = new CornerPipe(tp[2], false);
+                } else if (tp[1].equals("Empty")) {
+                    mp[a % 4][a / 4] = new Empty(tp[2].equals("Free"));
+                } else if (tp[1].equals("Starter")) {
+                    mp[a % 4][a / 4] = new StartPipe(tp[2]);
+                    ans.add(a);
+                    //starter tile's unused connection is 0
+                    unused.add(0);
+                } else if (tp[1].equals("End")) {
+                    mp[a % 4][a / 4] = new EndPipe(tp[2]);
+                    end = a;
+                } else {
+                    System.out.println("Invalid input for" + tp[0]);
+                }
+
+            }
+            //System.out.println((mp[1][3]).isFree);
+            game();
+        }
+
     }
 }
