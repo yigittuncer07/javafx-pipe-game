@@ -296,23 +296,27 @@ public class PipeGame extends Application {
 
         //Sets up place where tile is moved
         gridPane.getChildren().remove(imageViews[x2][y2]);
-        ImageView movedImage = new ImageView(getNodeType(x1,y1));
+        ImageView movedImage = new ImageView(getImageType(x1, y1));
         imageViews[x2][y2] = movedImage;
-        gridPane.add(movedImage,x2,y2);
+        gridPane.add(movedImage, x2, y2);
 
         //Removes old tile
         gridPane.getChildren().remove(imageViews[x1][y1]);
         ImageView emptyImage = new ImageView(emptyFree);
         imageViews[x1][y1] = emptyImage;
-        gridPane.add(emptyImage,x1,y1);
+        gridPane.add(emptyImage, x1, y1);
 
     }
 
     private static boolean isTileMovable(int x1, int y1, int x2, int y2) {
+        Image startImage = getImageType(x1, y1);
+        Image endImage = getImageType(x2, y2);
+        boolean b = !(startImage.equals(pipeStaticH) || startImage.equals(pipeStaticV) || startImage.equals(starterH) || startImage.equals(starterV) || startImage.equals(endH) || startImage.equals(endV) || startImage.equals(emptyFree)) && endImage.equals(emptyFree);
         if ((Math.abs(x1 - x2) == 1) && (y1 - y2 == 0)) {
-            return true;
+            return b;
+
         } else if ((x1 - x2 == 0) && (Math.abs(y1 - y2) == 1)) {
-            return true;
+            return b;
         }
         return false;
 
@@ -352,10 +356,10 @@ public class PipeGame extends Application {
         return positions;
     }
 
-    public static Image getNodeType(final int column, final int row) {
+    public static Image getImageType(final int column, final int row) {
         ObservableList<Node> children = gridPane.getChildren();
-        for(Node node : children) {
-            if(GridPane.getRowIndex(node) == row && GridPane.getColumnIndex(node) == column) {
+        for (Node node : children) {
+            if (GridPane.getRowIndex(node) == row && GridPane.getColumnIndex(node) == column) {
                 ImageView imageView = (ImageView) node;
                 return imageView.getImage();
             }
