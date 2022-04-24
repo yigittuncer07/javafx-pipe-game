@@ -23,7 +23,14 @@ public class PipeGame extends Application {
     private static File levelFile;
     private static GridPane gridPane = new GridPane();
 
+    private static ComboBox<String> comboBox = new ComboBox<>();
+
+
     private static int numberOfMoves = 0;
+    private static int unlockedLevel = 1;
+    private static int currentLevel;
+    private static final int numberOfLevels = folderSize(new File("src/levels"));
+
 
     private static Label displayLabel = new Label("Welcome to PipeGame!");
     private static Label movesLabel = new Label("Number of moves: " + numberOfMoves);
@@ -53,24 +60,29 @@ public class PipeGame extends Application {
     public void start(Stage stage) {
 
         //Create combo box
-        ComboBox<String> comboBox = new ComboBox<>();
         comboBox.setValue("Select Level");
-        comboBox.getItems().add("Level 1");
-        for (int i = 2; i <= folderSize(new File("src/levels")); i++) {
-            comboBox.getItems().add("Level " + i);
+        ObservableList<String> list = comboBox.getItems();
+        list.add("Level 1");
+        for (int i = 2; i <= numberOfLevels; i++) {
+            list.add("(LOCKED) Level " + i);
         }
 
-        //Create labels
 
-        //Create h box
+        //Create h Box
         HBox hBox = new HBox();
+        comboBox.setPrefWidth(140);
+
+        displayLabel.setPrefWidth(140);
+
+        movesLabel.setPrefWidth(140);
+
         hBox.getChildren().addAll(comboBox, displayLabel, movesLabel);
-        hBox.setSpacing(40);
+        hBox.setSpacing(35);
 
         //Create grid pane
         gridPane.setGridLinesVisible(true);
 
-        //Create vBox
+        //Create v Box
         VBox pane = new VBox();
         Line line = new Line();
 
@@ -89,24 +101,27 @@ public class PipeGame extends Application {
         }
 
         comboBox.setOnAction(event -> {
+            //Resets number of moves
+            setNumberOfMoves(0);
+
             //Gets the chosen value
             String value = comboBox.getValue();
-            int level = 0;
 
             //Checks if the level is a locked level
             if (value.contains("LOCKED")) {
                 displayLabel.setText("That level is Locked!");
             } else {
                 try {
-                    level = Integer.parseInt(value.substring(6));
-                    displayLabel.setText("Level " + level);
+                    currentLevel = Integer.parseInt(value.substring(6));
+                    displayLabel.setText("Level " + currentLevel);
+                    //Sets the grid according to the level
+                    setGrid(currentLevel);
+
                 } catch (Exception ignored) {
                     System.out.println("Error at get Substring");
                 }
             }
 
-            //Sets the grid according to the level
-            setGrid(level);
         });
 
 
@@ -124,6 +139,12 @@ public class PipeGame extends Application {
 
                 if (isTileMovable(pressedGrid1[0], pressedGrid1[1], pressedGrid2[0], pressedGrid2[1])) {
                     moveTile(pressedGrid1[0], pressedGrid1[1], pressedGrid2[0], pressedGrid2[1]);
+                    if (isWon()) {
+                        if (currentLevel == unlockedLevel) {
+                            unlockLevel();
+                            System.out.println("Unlock Level Called");
+                        }
+                    }
                 }
 
 
@@ -147,11 +168,13 @@ public class PipeGame extends Application {
 
     }
 
+    //Launches the program
     public static void main(String[] args) {
         launch(args);
     }
 
     /*-----------------------------------Methods-----------------------------------*/
+
     //This returns the size of any directory
     public static int folderSize(File directory) {
         int length = 0;
@@ -166,7 +189,6 @@ public class PipeGame extends Application {
     //This method sets the grid according to the given level
     private static void setGrid(int level) {
         //Checks if level has actually been chosen
-        System.out.println(level);
         if (level == 0) {
             return;
         }
@@ -299,7 +321,6 @@ public class PipeGame extends Application {
                             imageViews[x][y] = imageView2;
                         }
                         break;
-
                 }
             }
         }
@@ -311,8 +332,8 @@ public class PipeGame extends Application {
         gridPane.getChildren().clear();
     }
 
-    //This method moves tiles, according to the x y values
-    private static void moveTile(int x1, int y1, int x2, int y2) {
+    //This method moves tiles, according to the x y values and also checks if the game is won.
+    private static boolean moveTile(int x1, int y1, int x2, int y2) {
         numberOfMoves++;
         movesLabel.setText("Number of moves: " + numberOfMoves);
 
@@ -328,13 +349,16 @@ public class PipeGame extends Application {
         imageViews[x1][y1] = emptyImage;
         gridPane.add(emptyImage, x1, y1);
 
+        //Check if game is won
+        return isWon();
     }
 
+    //Checks if the tiles are movable
     private static boolean isTileMovable(int x1, int y1, int x2, int y2) {
         Image startImage = getImageType(x1, y1);
         Image endImage = getImageType(x2, y2);
         assert startImage != null;
-        boolean b = !(startImage.equals(pipeStaticH) || startImage.equals(pipeStaticV) || startImage.equals(starterH) || startImage.equals(starterV) || startImage.equals(endH) || startImage.equals(endV) || startImage.equals(emptyFree)) || startImage.equals(pipeStatic01) || startImage.equals(pipeStatic11) || startImage.equals(pipeStatic10) || startImage.equals(pipeStatic00) && Objects.equals(endImage, emptyFree);
+        boolean b = !((startImage.equals(pipeStaticH) || startImage.equals(pipeStaticV) || startImage.equals(starterH) || startImage.equals(starterV) || startImage.equals(endH) || startImage.equals(endV) || startImage.equals(emptyFree)) || startImage.equals(pipeStatic01) || startImage.equals(pipeStatic11) || startImage.equals(pipeStatic10) || startImage.equals(pipeStatic00)) && endImage.equals(emptyFree);
         if ((Math.abs(x1 - x2) == 1) && (y1 - y2 == 0)) {
             return b;
 
@@ -379,7 +403,8 @@ public class PipeGame extends Application {
         return positions;
     }
 
-    public static Image getImageType(final int column, final int row) {
+    //Returns the type of image of a place in the grid
+    private static Image getImageType(final int column, final int row) {
         ObservableList<Node> children = gridPane.getChildren();
         for (Node node : children) {
             if (GridPane.getRowIndex(node) == row && GridPane.getColumnIndex(node) == column) {
@@ -390,8 +415,28 @@ public class PipeGame extends Application {
         return null;
     }
 
+    private static void setNumberOfMoves(int moves) {
+        numberOfMoves = moves;
+        movesLabel.setText("Number of moves: " + moves);
+    }
+
+    private static void setDisplayLabel(String s) {
+        displayLabel.setText(s);
+    }
+
+    //This method sets the elements of the combo box
+    private static void unlockLevel() {
+        unlockedLevel++;
+        ObservableList<String> list = comboBox.getItems();
+        list.set(unlockedLevel - 1, "Level " + unlockedLevel);
+        setDisplayLabel("Level " + (unlockedLevel) + " unlocked!");
+
+    }
+
+    //Checks if the game is won
     private static boolean isWon() {
 
+        
         return true;
     }
 }
