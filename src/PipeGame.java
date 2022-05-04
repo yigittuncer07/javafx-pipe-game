@@ -1,89 +1,196 @@
+/*
+*
+* NAME: Yiğit Tuncer, STUDENT ID: 150121073
+* NAME: ARDACAN ÖZENER, STUDENT ID: 150120026
+*
+*/
+
+import javafx.animation.PathTransition;
 import javafx.application.Application;
 import javafx.collections.ObservableList;
-import javafx.scene.Node;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.shape.Line;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
+import javafx.scene.shape.*;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Scanner;
 
 public class PipeGame extends Application {
 
-    private static ImageView[][] imageViews = new ImageView[4][4];
+    static Tile[][] gridArray = new Tile[4][4];
+    static ArrayList<Integer> answerList = new ArrayList<>();
+    static ArrayList<Integer> unusedList = new ArrayList<>();
+    static File file;
+    static Scanner scanner;
 
-    private static File levelFile;
-    private static GridPane gridPane = new GridPane();
+    //Creates the grid pane
+    private static final GridPane gridPane = new GridPane();
 
-    private static ComboBox<String> comboBox = new ComboBox<>();
+    //Creates the combo box
+    private final ComboBox<String> comboBox = new ComboBox<>();
 
-
+    //Integer fields
     private static int numberOfMoves = 0;
     private static int unlockedLevel = 1;
     private static int currentLevel;
+    private static int end;
     private static final int numberOfLevels = folderSize(new File("src/levels"));
+    private static double ballSpeed = 8;
 
+    //Creates the labels
+    private final Label displayLabel = new Label("Welcome to PipeGame!");
+    private final Label movesLabel = new Label("Number of moves: " + numberOfMoves);
 
-    private static Label displayLabel = new Label("Welcome to PipeGame!");
-    private static Label movesLabel = new Label("Number of moves: " + numberOfMoves);
+    //Creates the ball
+    private final ImageView ball = new ImageView(new Image("extraImages/Ball.png", 30, 30, false, false));
 
+    //Creates booleans
+    private static boolean isBallRolled;
+    private static boolean isSoundOn = true;
 
-    private static final Image corner00 = new Image("images/00.png", 120, 120, false, false);
-    private static final Image corner01 = new Image("images/01.png", 120, 120, false, false);
-    private static final Image corner10 = new Image("images/10.png", 120, 120, false, false);
-    private static final Image corner11 = new Image("images/11.png", 120, 120, false, false);
-    private static final Image empty = new Image("images/Empty.png", 120, 120, false, false);
-    private static final Image emptyFree = new Image("images/EmptyFree.png", 120, 120, false, false);
-    private static final Image endH = new Image("images/EndH.png", 120, 120, false, false);
-    private static final Image endV = new Image("images/EndV.png", 120, 120, false, false);
-    private static final Image pipeH = new Image("images/PipeH.png", 120, 120, false, false);
-    private static final Image pipeStaticH = new Image("images/PipeStaticH.png", 120, 120, false, false);
-    private static final Image pipeStaticV = new Image("images/PipeStaticV.png", 120, 120, false, false);
-    private static final Image pipeV = new Image("images/PipeV.png", 120, 120, false, false);
-    private static final Image starterH = new Image("images/StarterH.png", 120, 120, false, false);
-    private static final Image starterV = new Image("images/StarterV.png", 120, 120, false, false);
-    private static final Image pipeStatic00 = new Image("images/00Static.png", 120, 120, false, false);
-    private static final Image pipeStatic01 = new Image("images/01Static.png", 120, 120, false, false);
-    private static final Image pipeStatic10 = new Image("images/10Static.png", 120, 120, false, false);
-    private static final Image pipeStatic11 = new Image("images/11Static.png", 120, 120, false, false);
+    //Creates a variable for each image in the images directory
+    public static final Image corner00 = new Image("images/00.png", 120, 120, false, false);
+    public static final Image corner01 = new Image("images/01.png", 120, 120, false, false);
+    public static final Image corner10 = new Image("images/10.png", 120, 120, false, false);
+    public static final Image corner11 = new Image("images/11.png", 120, 120, false, false);
+    public static final Image empty = new Image("images/Empty.png", 120, 120, false, false);
+    public static final Image emptyFree = new Image("images/EmptyFree.png", 120, 120, false, false);
+    public static final Image endH = new Image("images/EndH.png", 120, 120, false, false);
+    public static final Image endV = new Image("images/EndV.png", 120, 120, false, false);
+    public static final Image pipeH = new Image("images/PipeH.png", 120, 120, false, false);
+    public static final Image pipeStaticH = new Image("images/PipeStaticH.png", 120, 120, false, false);
+    public static final Image pipeStaticV = new Image("images/PipeStaticV.png", 120, 120, false, false);
+    public static final Image pipeV = new Image("images/PipeV.png", 120, 120, false, false);
+    public static final Image starterH = new Image("images/StarterHBall.png", 120, 120, false, false);
+    public static final Image starterV = new Image("images/StarterVBall.png", 120, 120, false, false);
+    public static final Image pipeStatic00 = new Image("images/00Static.png", 120, 120, false, false);
+    public static final Image pipeStatic01 = new Image("images/01Static.png", 120, 120, false, false);
+    public static final Image pipeStatic10 = new Image("images/10Static.png", 120, 120, false, false);
+    public static final Image pipeStatic11 = new Image("images/11Static.png", 120, 120, false, false);
 
 
     @Override
-    public void start(Stage stage) {
+    public void start(Stage primaryStage) {
 
-        //Create combo box
+        /*Sets up combo box so that the first level
+         * is not locked and the rest to be normal.
+         * The game works by checking if the title of
+         * the level has "(LOCKED)" in it. When a level
+         * is won the LOCKED is removed in the setComboBox method*/
         comboBox.setValue("Select Level");
+        comboBox.setStyle("-fx-background-color: #d1d1d1;");
         ObservableList<String> list = comboBox.getItems();
         list.add("Level 1");
         for (int i = 2; i <= numberOfLevels; i++) {
             list.add("(LOCKED) Level " + i);
         }
 
+        //Sets up the music
+        File file = new File("src/sounds/karinka.mp3");
+        Media media = new Media(file.toURI().toString());
+        MediaPlayer mediaPlayer = new MediaPlayer(media);
+        mediaPlayer.setVolume(0.4);
+        mediaPlayer.setCycleCount(MediaPlayer.INDEFINITE);
+        mediaPlayer.setAutoPlay(true);
 
-        //Create h Box
-        HBox hBox = new HBox();
+        //Create upper hBox
+        HBox upperHBox = new HBox();
+
+        //Sets the preferred sizes of the nodes so that they don't move
         comboBox.setPrefWidth(140);
-
-        displayLabel.setPrefWidth(140);
-
+        displayLabel.setPrefWidth(150);
         movesLabel.setPrefWidth(140);
 
-        hBox.getChildren().addAll(comboBox, displayLabel, movesLabel);
-        hBox.setSpacing(35);
+        //Adds nodes to the upper hBox and set color
+        upperHBox.setStyle("-fx-background-color: #464a52;");
+        upperHBox.getChildren().addAll(comboBox, displayLabel, movesLabel);
+        upperHBox.setSpacing(25);
 
-        //Create grid pane
-        gridPane.setGridLinesVisible(true);
+        //Creates speed slider and its image
+        ImageView speedImageView = new ImageView(new Image("extraImages/speed.png", 50, 30, false, false));
+        Slider speedSlider = new Slider(0, 9.7, 8);
+        speedSlider.setPrefHeight(8);
+        speedSlider.setPrefWidth(100);
 
-        //Create v Box
-        VBox pane = new VBox();
+        //Creates the sound slider
+        Slider soundSlider = new Slider(0, 1, 0.4);
+        soundSlider.setPrefHeight(8);
+        soundSlider.setPrefWidth(100);
+
+        //Creates sound button
+        Button soundButton = new Button();
+        soundButton.setPrefWidth(50);
+        ImageView soundImageView = new ImageView(new Image("extraImages/SoundOn.png", 50, 20, false, false));
+        soundButton.setGraphic(soundImageView);
+
+        //Sets up info button
+        Button infoButton = new Button();
+        infoButton.setGraphic(new ImageView(new Image("extraImages/info.png",20,20,false,false)));
+        VBox vBox1 = new VBox();
+        Text title = new Text();
+        Text names = new Text();
+        Text credits = new Text();
+        vBox1.setSpacing(30);
+        vBox1.setAlignment(Pos.CENTER);
+        title.setText("PIPE GAME");
+        title.setStyle("-fx-text-fill: green; -fx-font-size: 16px;");
+        names.setText("Made by: \n" +
+                "Ardacan Özener \n" +
+                "Yiğit Tuncer");
+        credits.setText("Thanks to JetBrains and StackOverflow");
+        names.setStyle("-fx-text-fill: blue; -fx-font-size: 12px;");
+        vBox1.getChildren().addAll(title,names,credits);
+        Scene infoScene = new Scene(vBox1, 300, 300);
+        vBox1.setStyle("-fx-background-color: #464a52;");
+        Stage infoStage = new Stage();
+        infoStage.setScene(infoScene);
+        infoStage.setResizable(false);
+
+        //Sets up helpButton
+        Button helpButton = new Button("Give Hint");
+        helpButton.setPrefSize(70,20);
+        helpButton.setStyle("-fx-background-color: #d1d1d1");
+        GridPane gridPane2 = new GridPane();
+        Scene scene2 = new Scene(gridPane2, 360, 360);
+        ArrayList<ImageView> solutionList = getSolution();
+        int index = 0;
+        for (int k = 0; k < 4; k++) {
+            for (int j = 0; j < 4; j++) {
+                gridPane2.add(solutionList.get(index), k, j);
+                index++;
+            }
+        }
+        Stage helpStage = new Stage();
+        helpStage.setScene(scene2);
+        helpStage.setResizable(false);
+
+        //Create lower hBox
+        HBox lowerHBox = new HBox();
+
+        //Set color of lower hBox and add nodes
+        lowerHBox.setStyle("-fx-background-color: #464a52;");
+        lowerHBox.getChildren().addAll(soundButton, soundSlider, speedImageView, speedSlider, helpButton,infoButton);
+        lowerHBox.setSpacing(10);
+
+        //Create vBox
+        VBox vBox = new VBox();
         Line line = new Line();
 
         //Create a line to separate the game from the labels
@@ -92,17 +199,48 @@ public class PipeGame extends Application {
         line.setStartY(30);
         line.setEndY(30);
 
-        //Sets the start scene
-        for (int i = 0; i < 4; i++) {
-            for (int k = 0; k < 4; k++) {
-                ImageView empty1 = new ImageView(empty);
-                gridPane.add(empty1, i, k);
-            }
-        }
+        //Sets the style of the labels
+        movesLabel.setStyle("-fx-text-fill: #a8bce6; -fx-font-size: 15px;");
+        displayLabel.setStyle("-fx-text-fill: #a8bce6; -fx-font-size: 15px;");
 
+        //Sets the start scene
+        Image a = new Image("extraImages/A.png", 120, 120, false, false);
+        Image e = new Image("extraImages/E.png", 120, 120, false, false);
+        Image g = new Image("extraImages/G.png", 120, 120, false, false);
+        Image i = new Image("extraImages/I.png", 120, 120, false, false);
+        Image m = new Image("extraImages/M.png", 120, 120, false, false);
+        Image p = new Image("extraImages/P.png", 120, 120, false, false);
+
+        gridPane.add(new ImageView(empty), 0, 0);
+        gridPane.add(new ImageView(empty), 1, 0);
+        gridPane.add(new ImageView(empty), 2, 0);
+        gridPane.add(new ImageView(empty), 3, 0);
+
+        gridPane.add(new ImageView(p), 0, 1);
+        gridPane.add(new ImageView(i), 1, 1);
+        gridPane.add(new ImageView(p), 2, 1);
+        gridPane.add(new ImageView(e), 3, 1);
+
+        gridPane.add(new ImageView(g), 0, 2);
+        gridPane.add(new ImageView(a), 1, 2);
+        gridPane.add(new ImageView(m), 2, 2);
+        gridPane.add(new ImageView(e), 3, 2);
+
+        gridPane.add(new ImageView(empty), 0, 3);
+        gridPane.add(new ImageView(empty), 1, 3);
+        gridPane.add(new ImageView(empty), 2, 3);
+        gridPane.add(new ImageView(empty), 3, 3);
+
+
+        /*-----------------------------------Events-----------------------------------*/
+
+        //This part works when an item is chosen from the combo box
         comboBox.setOnAction(event -> {
+            //Resets ball roll status
+            isBallRolled = false;
+
             //Resets number of moves
-            setNumberOfMoves(0);
+            resetNumberOfMoves();
 
             //Gets the chosen value
             String value = comboBox.getValue();
@@ -110,70 +248,103 @@ public class PipeGame extends Application {
             //Checks if the level is a locked level
             if (value.contains("LOCKED")) {
                 displayLabel.setText("That level is Locked!");
+                setGridLocked();
             } else {
                 try {
+                    //Gets which level is chosen
                     currentLevel = Integer.parseInt(value.substring(6));
                     displayLabel.setText("Level " + currentLevel);
+
                     //Sets the grid according to the level
-                    setGrid(currentLevel);
+                    setGrid();
 
                 } catch (Exception ignored) {
-                    System.out.println("Error at get Substring");
                 }
             }
 
         });
 
-
+        /*The following code calls the methods needed to move
+         * the tiles the user has clicked*/
         gridPane.setOnMousePressed(event1 -> {
+
+            //Gets the coordinates of the first click
             int x1 = (int) event1.getSceneX();
             int y1 = (int) event1.getSceneY();
 
+            //Gets which grid is clicked according to the click
             int[] pressedGrid1 = getWhichTileIsClicked(x1, y1);
 
+            //Same thing but for when the mouse is released
             gridPane.setOnMouseReleased(event2 -> {
+
+                //Gets coordinates for the release
                 int x2 = (int) event2.getSceneX();
                 int y2 = (int) event2.getSceneY();
 
+                //Gets which grid is chosen when mouse is released
                 int[] pressedGrid2 = getWhichTileIsClicked(x2, y2);
 
-                if (isTileMovable(pressedGrid1[0], pressedGrid1[1], pressedGrid2[0], pressedGrid2[1])) {
-                    moveTile(pressedGrid1[0], pressedGrid1[1], pressedGrid2[0], pressedGrid2[1]);
-                    if (isWon()) {
-                        if (currentLevel == unlockedLevel) {
-                            unlockLevel();
-                            System.out.println("Unlock Level Called");
-                        }
-                    }
+                //Moves the chosen tiles
+                boolean isWon = moveTile(pressedGrid1[0], pressedGrid1[1], pressedGrid2[0], pressedGrid2[1]);
+                if (isWon) {
+                    animateBall();
+                    isBallRolled = true;
                 }
-
 
             });
         });
 
+        //This part makes the sound button work
+        soundButton.setOnAction(event2 -> {
+            ImageView soundOffImageView = new ImageView(new Image("extraImages/SoundOff.png", 50, 20, false, false));
+
+            if (isSoundOn) {
+                mediaPlayer.pause();
+                soundButton.setGraphic(soundOffImageView);
+                isSoundOn = false;
+            } else {
+                mediaPlayer.play();
+                soundButton.setGraphic(soundImageView);
+                isSoundOn = true;
+            }
+        });
+
+        //This part makes the hint button work
+        helpButton.setOnAction(event4 -> helpStage.show());
+
+        //This makes the sound slider work
+        soundSlider.valueProperty().addListener(observable -> mediaPlayer.setVolume(soundSlider.getValue()));
+
+        //This makes the speed slider work
+        speedSlider.valueProperty().addListener(observable -> ballSpeed = speedSlider.getValue());
+
+        //This makes the info button work
+        infoButton.setOnAction(event5 -> infoStage.show());
 
         //Adds elements to the main pane
-        pane.getChildren().add(hBox);
-        pane.getChildren().add(line);
-        pane.getChildren().add(gridPane);
+        vBox.getChildren().add(upperHBox);
+        vBox.getChildren().add(line);
+        vBox.getChildren().add(gridPane);
+        vBox.getChildren().add(lowerHBox);
 
         //Sets up the scene
-        Scene scene = new Scene(pane, 480, 510);
+        Scene scene = new Scene(vBox, 480, 538);
 
         //Sets up the stage
-        stage.setTitle("Pipe Game v1.0");
-        stage.setScene(scene);
-        stage.setResizable(false);
-        stage.show();
+        primaryStage.setTitle("Pipe Game v1.1");
+        primaryStage.setScene(scene);
+        primaryStage.setResizable(false);
+        primaryStage.show();
 
-    }
-
-    //Launches the program
-    public static void main(String[] args) {
-        launch(args);
     }
 
     /*-----------------------------------Methods-----------------------------------*/
+
+    //This method launches the program
+    public static void main(String[] args) {
+        launch(args);
+    }
 
     //This returns the size of any directory
     public static int folderSize(File directory) {
@@ -186,188 +357,9 @@ public class PipeGame extends Application {
         return length;
     }
 
-    //This method sets the grid according to the given level
-    private static void setGrid(int level) {
-        //Checks if level has actually been chosen
-        if (level == 0) {
-            return;
-        }
-        Scanner scanner = null;
-        try {
-            //Gets the file according to the level
-            String fileName = "Level" + level + ".txt";
-            levelFile = new File("src/levels/" + fileName);
-
-            scanner = new Scanner(levelFile);
-            //Creates a scanner for the file
-        } catch (Exception e) {
-            System.out.println("File not found");
-        }
-        //Clears the grid
-        clearGrid();
-
-        //Loops for each part of the grid
-        for (int y = 0; y < 4; y++) {
-            for (int x = 0; x < 4; x++) {
-                assert scanner != null;
-                String line = scanner.nextLine();
-
-                //This following part makes sure the line isn't empty
-                boolean quit = false;
-                while (!quit) {
-                    if (line.isEmpty()) {
-                        line = scanner.nextLine();
-                    } else {
-                        quit = true;
-                    }
-                }
-
-                //This part gets the values from the line
-                String[] temp = line.split(",");
-                String type = temp[1];
-                String property = temp[2];
-
-                //Add images according to the given file
-                switch (type) {
-                    case "Starter":
-                        if (property.equals("Vertical")) {
-                            ImageView imageView = new ImageView(starterV);
-                            gridPane.add(imageView, x, y);
-                            imageViews[x][y] = imageView;
-                        } else {
-                            ImageView imageView = new ImageView(starterH);
-                            gridPane.add(imageView, x, y);
-                            imageViews[x][y] = imageView;
-                        }
-                        break;
-                    case "End":
-                        if (property.equals("Vertical")) {
-                            ImageView imageView = new ImageView(endV);
-                            gridPane.add(imageView, x, y);
-                            imageViews[x][y] = imageView;
-                        } else {
-                            ImageView imageView = new ImageView(endH);
-                            gridPane.add(imageView, x, y);
-                            imageViews[x][y] = imageView;
-                        }
-                        break;
-                    case "Empty":
-                        if (property.equals("Free")) {
-                            ImageView imageView = new ImageView(emptyFree);
-                            gridPane.add(imageView, x, y);
-                            imageViews[x][y] = imageView;
-                        } else {
-                            ImageView imageView = new ImageView(empty);
-                            gridPane.add(imageView, x, y);
-                            imageViews[x][y] = imageView;
-                        }
-                        break;
-                    case "Pipe":
-                        switch (property) {
-                            case "Vertical":
-                                ImageView imageView = new ImageView(pipeV);
-                                gridPane.add(imageView, x, y);
-                                imageViews[x][y] = imageView;
-                                break;
-                            case "Horizontal":
-                                ImageView imageView1 = new ImageView(pipeH);
-                                gridPane.add(imageView1, x, y);
-                                imageViews[x][y] = imageView1;
-                                break;
-                            case "01":
-                                ImageView imageView2 = new ImageView(corner01);
-                                gridPane.add(imageView2, x, y);
-                                imageViews[x][y] = imageView2;
-                                break;
-                            case "00":
-                                ImageView imageView3 = new ImageView(corner00);
-                                gridPane.add(imageView3, x, y);
-                                imageViews[x][y] = imageView3;
-                                break;
-                            case "10":
-                                ImageView imageView4 = new ImageView(corner10);
-                                gridPane.add(imageView4, x, y);
-                                imageViews[x][y] = imageView4;
-                                break;
-                            case "11":
-                                ImageView imageView5 = new ImageView(corner11);
-                                gridPane.add(imageView5, x, y);
-                                imageViews[x][y] = imageView5;
-                                break;
-                        }
-                        break;
-                    case "PipeStatic":
-                        if (property.equals("Vertical")) {
-                            gridPane.add(new ImageView(pipeStaticV), x, y);
-                            imageViews[x][y] = new ImageView(pipeStaticV);
-                        } else if (property.equals("Horizontal")) {
-                            gridPane.add(new ImageView(pipeStaticH), x, y);
-                            imageViews[x][y] = new ImageView(pipeStaticH);
-                        } else if (property.equals("01")) {
-                            ImageView imageView2 = new ImageView(pipeStatic01);
-                            gridPane.add(imageView2, x, y);
-                            imageViews[x][y] = imageView2;
-                        } else if (property.equals("00")) {
-                            ImageView imageView2 = new ImageView(pipeStatic00);
-                            gridPane.add(imageView2, x, y);
-                            imageViews[x][y] = imageView2;
-                        } else if (property.equals("11")) {
-                            ImageView imageView2 = new ImageView(pipeStatic11);
-                            gridPane.add(imageView2, x, y);
-                            imageViews[x][y] = imageView2;
-                        } else if (property.equals("10")) {
-                            ImageView imageView2 = new ImageView(pipeStatic10);
-                            gridPane.add(imageView2, x, y);
-                            imageViews[x][y] = imageView2;
-                        }
-                        break;
-                }
-            }
-        }
-
-    }
-
     //This method clears the grid of any nodes
     private static void clearGrid() {
         gridPane.getChildren().clear();
-    }
-
-    //This method moves tiles, according to the x y values and also checks if the game is won.
-    private static boolean moveTile(int x1, int y1, int x2, int y2) {
-        numberOfMoves++;
-        movesLabel.setText("Number of moves: " + numberOfMoves);
-
-        //Sets up place where tile is moved
-        gridPane.getChildren().remove(imageViews[x2][y2]);
-        ImageView movedImage = new ImageView(getImageType(x1, y1));
-        imageViews[x2][y2] = movedImage;
-        gridPane.add(movedImage, x2, y2);
-
-        //Removes old tile
-        gridPane.getChildren().remove(imageViews[x1][y1]);
-        ImageView emptyImage = new ImageView(emptyFree);
-        imageViews[x1][y1] = emptyImage;
-        gridPane.add(emptyImage, x1, y1);
-
-        //Check if game is won
-        return isWon();
-    }
-
-    //Checks if the tiles are movable
-    private static boolean isTileMovable(int x1, int y1, int x2, int y2) {
-        Image startImage = getImageType(x1, y1);
-        Image endImage = getImageType(x2, y2);
-        assert startImage != null;
-        boolean b = !((startImage.equals(pipeStaticH) || startImage.equals(pipeStaticV) || startImage.equals(starterH) || startImage.equals(starterV) || startImage.equals(endH) || startImage.equals(endV) || startImage.equals(emptyFree)) || startImage.equals(pipeStatic01) || startImage.equals(pipeStatic11) || startImage.equals(pipeStatic10) || startImage.equals(pipeStatic00)) && endImage.equals(emptyFree);
-        if ((Math.abs(x1 - x2) == 1) && (y1 - y2 == 0)) {
-            return b;
-
-        } else if ((x1 - x2 == 0) && (Math.abs(y1 - y2) == 1)) {
-            return b;
-        }
-        return false;
-
-
     }
 
     //This method return which tile is pressed according to x and y
@@ -403,29 +395,209 @@ public class PipeGame extends Application {
         return positions;
     }
 
-    //Returns the type of image of a place in the grid
-    private static Image getImageType(final int column, final int row) {
-        ObservableList<Node> children = gridPane.getChildren();
-        for (Node node : children) {
-            if (GridPane.getRowIndex(node) == row && GridPane.getColumnIndex(node) == column) {
-                ImageView imageView = (ImageView) node;
-                return imageView.getImage();
+    //This method checks whether the game is won
+    public boolean isGameWon() {
+        int index;
+        int x;
+        int y;
+        try {
+            while (true) {
+                index = answerList.get(answerList.size() - 1);
+                x = index % 4;
+                y = index / 4;
+                if (gridArray[x][y].connections[unusedList.get(unusedList.size() - 1)] == 'u') {
+                    if (gridArray[x][y - 1].connections[0] == 'd') {
+                        answerList.add(index - 4);
+                        unusedList.add(1);
+                    } else if (gridArray[x][y - 1].connections[1] == 'd') {
+                        answerList.add(index - 4);
+                        unusedList.add(0);
+                    } else {
+                        break;
+                    }
+                } else if (gridArray[x][y].connections[unusedList.get(unusedList.size() - 1)] == 'd') {
+                    if (gridArray[x][y + 1].connections[0] == 'u') {
+                        answerList.add(index + 4);
+                        unusedList.add(1);
+                    } else if (gridArray[x][y + 1].connections[1] == 'u') {
+                        answerList.add(index + 4);
+                        unusedList.add(0);
+                    } else {
+                        break;
+                    }
+                } else if (gridArray[x][y].connections[unusedList.get(unusedList.size() - 1)] == 'l') {
+                    if (gridArray[x - 1][y].connections[0] == 'r') {
+                        answerList.add(index - 1);
+                        unusedList.add(1);
+                    } else if (gridArray[x - 1][y].connections[1] == 'r') {
+                        answerList.add(index - 1);
+                        unusedList.add(0);
+                    } else {
+                        break;
+                    }
+                } else if (gridArray[x][y].connections[unusedList.get(unusedList.size() - 1)] == 'r') {
+                    if (gridArray[x + 1][y].connections[0] == 'l') {
+                        answerList.add(index + 1);
+                        unusedList.add(1);
+                    } else if (gridArray[x + 1][y].connections[1] == 'l') {
+                        answerList.add(index + 1);
+                        unusedList.add(0);
+                    } else {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
+        } catch (Exception ignored) {
+        }
+
+        if (answerList.contains(end)) {
+            if (currentLevel == unlockedLevel) {
+                unlockLevel();
+            } else {
+                setDisplayLabel("Correct! You Won!");
+            }
+            return true;
+        }
+        return false;
+
+    }
+
+    //Sets the grid for when the user chooses a locked level
+    public void setGridLocked() {
+        Image cross1 = new Image("extraImages/cross.png", 120, 120, false, false);
+        Image cross2 = new Image("extraImages/cross1.png", 120, 120, false, false);
+
+        gridPane.add(new ImageView(cross1), 0, 0);
+        gridPane.add(new ImageView(empty), 1, 0);
+        gridPane.add(new ImageView(empty), 2, 0);
+        gridPane.add(new ImageView(cross2), 3, 0);
+
+        gridPane.add(new ImageView(empty), 0, 1);
+        gridPane.add(new ImageView(cross1), 1, 1);
+        gridPane.add(new ImageView(cross2), 2, 1);
+        gridPane.add(new ImageView(empty), 3, 1);
+
+        gridPane.add(new ImageView(empty), 0, 2);
+        gridPane.add(new ImageView(cross2), 1, 2);
+        gridPane.add(new ImageView(cross1), 2, 2);
+        gridPane.add(new ImageView(empty), 3, 2);
+
+        gridPane.add(new ImageView(cross2), 0, 3);
+        gridPane.add(new ImageView(empty), 1, 3);
+        gridPane.add(new ImageView(empty), 2, 3);
+        gridPane.add(new ImageView(cross1), 3, 3);
+
+
+    }
+
+    //This method checks whether the tiles are movable and also moves said tiles
+    public boolean moveTile(int x1, int y1, int x2, int y2) {
+
+        //Checks if the game is currently at the starter page or if the level has already been completed
+        if (displayLabel.getText().contains("Welcome") || isBallRolled) {
+            return false;
+        }
+
+        //Checks if the tiles are movable
+        if ((gridArray[x1][y1].isMovable) && (gridArray[x2][y2].isFree) && (((Math.abs(x1 - x2) == 1) && (y1 == y2)) || ((Math.abs(y1 - y2) == 1) && (x1 == x2)))) {
+
+            //Updates number of moves
+            numberOfMoves++;
+            movesLabel.setText("Number of moves: " + numberOfMoves);
+
+            //Moves the tiles
+            gridPane.getChildren().remove(gridArray[x1][y1].imageview);
+            gridPane.getChildren().remove(gridArray[x2][y2].imageview);
+
+            Tile temp = gridArray[x1][y1];
+            gridArray[x1][y1] = gridArray[x2][y2];
+            gridArray[x2][y2] = temp;
+
+            gridPane.add(gridArray[x1][y1].imageview, x1, y1);
+            gridPane.add(gridArray[x2][y2].imageview, x2, y2);
+
+            if (answerList.contains((4 * y1) + x1)) {
+                while (answerList.contains((4 * y1) + x1)) {
+                    unusedList.remove(answerList.size() - 1);
+                    answerList.remove(answerList.size() - 1);
+                }
             }
         }
-        return null;
+        //Checks if the game is won
+        return isGameWon();
     }
 
-    private static void setNumberOfMoves(int moves) {
-        numberOfMoves = moves;
-        movesLabel.setText("Number of moves: " + moves);
-    }
+    //This method sets the grid according to the level files
+    public static void setGrid() throws FileNotFoundException {
 
-    private static void setDisplayLabel(String s) {
-        displayLabel.setText(s);
+        //Clears the lists
+        clearGrid();
+        answerList.clear();
+        unusedList.clear();
+
+        int index;
+        int x;
+        int y;
+
+        //Finds the level file according to current level
+        file = new File("src/levels/Level" + currentLevel + ".txt");
+        scanner = new Scanner(file);
+        //setting the map
+        while (scanner.hasNextLine()) {
+
+            String[] line = (scanner.nextLine()).split(",");
+
+            //Checks if the line is empty
+            if (line.length < 3) {
+                continue;
+            }
+
+            index = Integer.parseInt(line[0]);
+            index--;
+
+            x = index % 4;
+            y = index / 4;
+
+            switch (line[1]) {
+                case "Pipe":
+                    gridArray[x][y] = new CornerPipe(line[2], true);
+                    gridPane.add(gridArray[x][y].imageview, x, y);
+                    break;
+                case "PipeStatic":
+                    gridArray[x][y] = new CornerPipe(line[2], false);
+                    gridPane.add(gridArray[x][y].imageview, x, y);
+                    break;
+                case "Empty":
+                    gridArray[x][y] = new EmptyC(line[2].equals("Free"));
+                    gridPane.add(gridArray[x][y].imageview, x, y);
+                    break;
+                case "Starter":
+
+                    gridArray[x][y] = new StartPipe(line[2]);
+                    answerList.add(index);
+                    unusedList.add(0);
+                    gridPane.add(gridArray[x][y].imageview, x, y);
+                    break;
+                case "End":
+                    gridArray[x][y] = new EndPipe(line[2]);
+                    end = index;
+                    gridPane.add(gridArray[x][y].imageview, x, y);
+                    break;
+                default:
+                    System.out.println("Invalid input for" + line[0]);
+                    break;
+            }
+
+        }
     }
 
     //This method sets the elements of the combo box
-    private static void unlockLevel() {
+    private void unlockLevel() {
+        if (currentLevel == folderSize(new File("src/levels"))) {
+            return;
+        }
         unlockedLevel++;
         ObservableList<String> list = comboBox.getItems();
         list.set(unlockedLevel - 1, "Level " + unlockedLevel);
@@ -433,10 +605,118 @@ public class PipeGame extends Application {
 
     }
 
-    //Checks if the game is won
-    private static boolean isWon() {
-
-        
-        return true;
+    //This method sets the display label
+    private void setDisplayLabel(String s) {
+        displayLabel.setText(s);
     }
+
+    //This method sets the number of moves
+    private void resetNumberOfMoves() {
+        numberOfMoves = 0;
+        movesLabel.setText("Number of moves: " + 0);
+    }
+
+    //This method animates the ball
+    private void animateBall() {
+
+        //This part removes the ball from the image
+        ImageView starterNoBallH = new ImageView(new Image("images/StarterH.png", 120, 120, false, false));
+        ImageView starterNoBallV = new ImageView(new Image("images/StarterV.png", 120, 120, false, false));
+
+        int indexOfStarter = answerList.get(0);
+        int x = indexOfStarter % 4;
+        int y = indexOfStarter / 4;
+
+        if (gridArray[x][y].imageview.getImage().equals(starterV)) {
+            gridPane.add(starterNoBallV, x, y);
+        } else if (gridArray[x][y].imageview.getImage().equals(starterH)) {
+            gridPane.add(starterNoBallH, x, y);
+        }
+
+        //This adds the rolling ball
+        gridPane.add(ball, 0, 0);
+
+        //This creates the path that the ball will roll
+        Path path = new Path();
+
+        path.getElements().add(new MoveTo(x * 120 + 55, y * 120 + 20));
+
+        int index;
+        int x1;
+        int y1;
+
+        for (int i = 0; i < answerList.size(); i++) {
+
+            index = answerList.get(i);
+            x1 = index % 4;
+            y1 = index / 4;
+
+            Image image = gridArray[x1][y1].imageview.getImage();
+
+            if (image.equals(corner00) || image.equals(corner01) || image.equals(corner10) || image.equals(corner11) || image.equals(pipeStatic00) || image.equals(pipeStatic01) || image.equals(pipeStatic10) || image.equals(pipeStatic11)) {
+
+                if (image.equals(corner00) || image.equals(pipeStatic00)) {
+                    path.getElements().add(new CubicCurveTo(x1 * 120, y1 * 120 + 25, x1 * 120 + 60, 25 + y1 * 120, 60 + x1 * 120, y1 * 120));
+
+                } else if (image.equals(corner01) || image.equals(pipeStatic01)) {
+                    path.getElements().add(new CubicCurveTo(x1 * 120 + 60, y1 * 120, x1 * 120 + 60, 25 + y1 * 120, 120 + x1 * 120, 25 + y1 * 120));
+
+                } else if (image.equals(corner10) || image.equals(pipeStatic10)) {
+                    path.getElements().add(new CubicCurveTo(x1 * 120, y1 * 120 + 25, x1 * 120 + 60, 25 + y1 * 120, 60 + x1 * 120, 50 + y1 * 120));
+
+                } else if (image.equals(corner11) || image.equals(pipeStatic11)) {
+                    path.getElements().add(new CubicCurveTo(60 + x1 * 120, 50 + y1 * 120, x1 * 120 + 60, 25 + y1 * 120, 120 + x1 * 120, 25 + y1 * 120));
+                }
+
+
+            } else {
+                path.getElements().add(new LineTo(55 + x1 * 120, 20 + y1 * 120));
+            }
+
+            //Creates the transition
+            PathTransition pathTransition = new PathTransition();
+
+            //Sets the animation time
+            pathTransition.setDuration(Duration.seconds(10 - ballSpeed));
+
+            //Sets the path of the ball
+            pathTransition.setPath(path);
+
+            pathTransition.setNode(ball);
+            pathTransition.play();
+
+        }
+    }
+
+    private ArrayList<ImageView> getSolution() {
+
+        Image corner00 = new Image("images/00.png", 90, 90, false, false);
+        Image corner01 = new Image("images/01.png", 90, 90, false, false);
+        Image corner10 = new Image("images/10.png", 90, 90, false, false);
+        Image corner11 = new Image("images/11.png", 90, 90, false, false);
+        Image empty = new Image("images/Empty.png", 90, 90, false, false);
+        Image emptyFree = new Image("images/EmptyFree.png", 90, 90, false, false);
+        Image endH = new Image("images/EndH.png", 90, 90, false, false);
+        Image endV = new Image("images/EndV.png", 90, 90, false, false);
+        Image pipeH = new Image("images/PipeH.png", 90, 90, false, false);
+        Image pipeStaticH = new Image("images/PipeStaticH.png", 90, 90, false, false);
+        Image pipeStaticV = new Image("images/PipeStaticV.png", 90, 90, false, false);
+        Image pipeV = new Image("images/PipeV.png", 90, 90, false, false);
+        Image starterH = new Image("images/StarterHBall.png", 90, 90, false, false);
+        Image starterV = new Image("images/StarterVBall.png", 90, 90, false, false);
+        Image pipeStatic00 = new Image("images/00Static.png", 90, 90, false, false);
+        Image pipeStatic01 = new Image("images/01Static.png", 90, 90, false, false);
+        Image pipeStatic10 = new Image("images/10Static.png", 90, 90, false, false);
+        Image pipeStatic11 = new Image("images/11Static.png", 90, 90, false, false);
+
+        ArrayList<ImageView> list = new ArrayList<>();
+
+        for (int i = 0; i < 16; i++) {
+            list.add(new ImageView(empty));
+        }
+
+        return list;
+    }
+
 }
+
