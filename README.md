@@ -1,1 +1,1 @@
-A game made completely with javaFX where you align the given tiles so that the ball can roll from the start of the game to the end of the game. There is music, a slider to adjust the speed that the ball rolls, a counter wich counts how many moves you've done and 10 given levels. You can add as many levels as you want, just add a text file to the levels folder with the same format as the others, make sure to stick to the naming convention aswell otherwise it won't work.
+A pipe game where you arrange tiles so that the ball can go to the end tile, made completely with JavaFX

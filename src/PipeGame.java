@@ -1,9 +1,9 @@
 /*
-*
-* NAME: Yiğit Tuncer, STUDENT ID: 150121073
-* NAME: ARDACAN ÖZENER, STUDENT ID: 150120026
-*
-*/
+ *
+ * NAME: Yiğit Tuncer, STUDENT ID: 150121073
+ * NAME: ARDACAN ÖZENER, STUDENT ID: 150120026
+ *
+ */
 
 import javafx.animation.PathTransition;
 import javafx.application.Application;
@@ -142,7 +142,7 @@ public class PipeGame extends Application {
 
         //Sets up info button
         Button infoButton = new Button();
-        infoButton.setGraphic(new ImageView(new Image("extraImages/info.png",20,20,false,false)));
+        infoButton.setGraphic(new ImageView(new Image("extraImages/info.png", 20, 20, false, false)));
         VBox vBox1 = new VBox();
         Text title = new Text();
         Text names = new Text();
@@ -151,12 +151,10 @@ public class PipeGame extends Application {
         vBox1.setAlignment(Pos.CENTER);
         title.setText("PIPE GAME");
         title.setStyle("-fx-text-fill: green; -fx-font-size: 16px;");
-        names.setText("Made by: \n" +
-                "Ardacan Özener \n" +
-                "Yiğit Tuncer");
+        names.setText("Made by: \n" + "Ardacan Özener \n" + "Yiğit Tuncer");
         credits.setText("Thanks to JetBrains and StackOverflow");
         names.setStyle("-fx-text-fill: blue; -fx-font-size: 12px;");
-        vBox1.getChildren().addAll(title,names,credits);
+        vBox1.getChildren().addAll(title, names, credits);
         Scene infoScene = new Scene(vBox1, 300, 300);
         vBox1.setStyle("-fx-background-color: #464a52;");
         Stage infoStage = new Stage();
@@ -164,29 +162,14 @@ public class PipeGame extends Application {
         infoStage.setResizable(false);
 
         //Sets up helpButton
-        Button helpButton = new Button("Give Hint");
-        helpButton.setPrefSize(70,20);
-        helpButton.setStyle("-fx-background-color: #d1d1d1");
-        GridPane gridPane2 = new GridPane();
-        Scene scene2 = new Scene(gridPane2, 360, 360);
-        ArrayList<ImageView> solutionList = getSolution();
-        int index = 0;
-        for (int k = 0; k < 4; k++) {
-            for (int j = 0; j < 4; j++) {
-                gridPane2.add(solutionList.get(index), k, j);
-                index++;
-            }
-        }
-        Stage helpStage = new Stage();
-        helpStage.setScene(scene2);
-        helpStage.setResizable(false);
+        Button helpButton = new Button("Exit Game");
 
         //Create lower hBox
         HBox lowerHBox = new HBox();
 
         //Set color of lower hBox and add nodes
         lowerHBox.setStyle("-fx-background-color: #464a52;");
-        lowerHBox.getChildren().addAll(soundButton, soundSlider, speedImageView, speedSlider, helpButton,infoButton);
+        lowerHBox.getChildren().addAll(soundButton, soundSlider, speedImageView, speedSlider, helpButton, infoButton);
         lowerHBox.setSpacing(10);
 
         //Create vBox
@@ -311,7 +294,7 @@ public class PipeGame extends Application {
         });
 
         //This part makes the hint button work
-        helpButton.setOnAction(event4 -> helpStage.show());
+        helpButton.setOnAction(event4 -> primaryStage.close());
 
         //This makes the sound slider work
         soundSlider.valueProperty().addListener(observable -> mediaPlayer.setVolume(soundSlider.getValue()));
@@ -656,18 +639,30 @@ public class PipeGame extends Application {
             if (image.equals(corner00) || image.equals(corner01) || image.equals(corner10) || image.equals(corner11) || image.equals(pipeStatic00) || image.equals(pipeStatic01) || image.equals(pipeStatic10) || image.equals(pipeStatic11)) {
 
                 if (image.equals(corner00) || image.equals(pipeStatic00)) {
-                    path.getElements().add(new CubicCurveTo(x1 * 120, y1 * 120 + 25, x1 * 120 + 60, 25 + y1 * 120, 60 + x1 * 120, y1 * 120));
-
+                    if (unusedList.get(i) == 1) {
+                        path.getElements().add(new CubicCurveTo(x1 * 120, y1 * 120 + 25, x1 * 120 + 60, 25 + y1 * 120, 60 + x1 * 120, y1 * 120));
+                    } else {
+                        path.getElements().add(new CubicCurveTo(60 + x1 * 120, y1 * 120, x1 * 120 + 60, 25 + y1 * 120, x1 * 120, y1 * 120 + 25));
+                    }
                 } else if (image.equals(corner01) || image.equals(pipeStatic01)) {
-                    path.getElements().add(new CubicCurveTo(x1 * 120 + 60, y1 * 120, x1 * 120 + 60, 25 + y1 * 120, 120 + x1 * 120, 25 + y1 * 120));
-
+                    if (unusedList.get(i) == 0) {
+                        path.getElements().add(new CubicCurveTo(x1 * 120 + 60, y1 * 120, x1 * 120 + 60, 25 + y1 * 120, 120 + x1 * 120, 25 + y1 * 120));
+                    } else {
+                        path.getElements().add(new CubicCurveTo(x1 * 120 + 120, 25 + y1 * 120, x1 * 120 + 60, 25 + y1 * 120, x1 * 120 + 60, y1 * 120));
+                    }
                 } else if (image.equals(corner10) || image.equals(pipeStatic10)) {
-                    path.getElements().add(new CubicCurveTo(x1 * 120, y1 * 120 + 25, x1 * 120 + 60, 25 + y1 * 120, 60 + x1 * 120, 50 + y1 * 120));
-
+                    if (unusedList.get(i) == 1) {
+                        path.getElements().add(new CubicCurveTo(x1 * 120, y1 * 120 + 25, x1 * 120 + 60, 25 + y1 * 120, 60 + x1 * 120, 50 + y1 * 120));
+                    } else {
+                        path.getElements().add(new CubicCurveTo(x1 * 120 + 60, y1 * 120 + 50, x1 * 120 + 60, 25 + y1 * 120, x1 * 120, 25 + y1 * 120));
+                    }
                 } else if (image.equals(corner11) || image.equals(pipeStatic11)) {
-                    path.getElements().add(new CubicCurveTo(60 + x1 * 120, 50 + y1 * 120, x1 * 120 + 60, 25 + y1 * 120, 120 + x1 * 120, 25 + y1 * 120));
+                    if (unusedList.get(i) == 0) {
+                        path.getElements().add(new CubicCurveTo(60 + x1 * 120, 50 + y1 * 120, x1 * 120 + 60, 25 + y1 * 120, 120 + x1 * 120, 25 + y1 * 120));
+                    } else {
+                        path.getElements().add(new CubicCurveTo(120 + x1 * 120, 25 + y1 * 120, x1 * 120 + 60, 25 + y1 * 120, 60 + x1 * 120, 50 + y1 * 120));
+                    }
                 }
-
 
             } else {
                 path.getElements().add(new LineTo(55 + x1 * 120, 20 + y1 * 120));
@@ -687,36 +682,5 @@ public class PipeGame extends Application {
 
         }
     }
-
-    private ArrayList<ImageView> getSolution() {
-
-        Image corner00 = new Image("images/00.png", 90, 90, false, false);
-        Image corner01 = new Image("images/01.png", 90, 90, false, false);
-        Image corner10 = new Image("images/10.png", 90, 90, false, false);
-        Image corner11 = new Image("images/11.png", 90, 90, false, false);
-        Image empty = new Image("images/Empty.png", 90, 90, false, false);
-        Image emptyFree = new Image("images/EmptyFree.png", 90, 90, false, false);
-        Image endH = new Image("images/EndH.png", 90, 90, false, false);
-        Image endV = new Image("images/EndV.png", 90, 90, false, false);
-        Image pipeH = new Image("images/PipeH.png", 90, 90, false, false);
-        Image pipeStaticH = new Image("images/PipeStaticH.png", 90, 90, false, false);
-        Image pipeStaticV = new Image("images/PipeStaticV.png", 90, 90, false, false);
-        Image pipeV = new Image("images/PipeV.png", 90, 90, false, false);
-        Image starterH = new Image("images/StarterHBall.png", 90, 90, false, false);
-        Image starterV = new Image("images/StarterVBall.png", 90, 90, false, false);
-        Image pipeStatic00 = new Image("images/00Static.png", 90, 90, false, false);
-        Image pipeStatic01 = new Image("images/01Static.png", 90, 90, false, false);
-        Image pipeStatic10 = new Image("images/10Static.png", 90, 90, false, false);
-        Image pipeStatic11 = new Image("images/11Static.png", 90, 90, false, false);
-
-        ArrayList<ImageView> list = new ArrayList<>();
-
-        for (int i = 0; i < 16; i++) {
-            list.add(new ImageView(empty));
-        }
-
-        return list;
-    }
-
 }
 

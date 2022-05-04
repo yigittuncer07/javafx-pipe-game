@@ -1,0 +1,16 @@
+1,End,Horizontal
+2,Empty,none
+3,Empty,none
+4,Start,Horizontal
+5,Pipe,Vertical
+6,Pipe,Vertical
+7,Empty,none
+8,Empty,none
+9,Empty,none
+10,Empty,none
+11,Empty,none
+12,Empty,none
+13,Empty,none
+14,Empty,none
+15,Empty,none
+16,Empty,none
