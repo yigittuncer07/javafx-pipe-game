@@ -1,2 +1,2 @@
 # PIPE GAME
-A pipe game where you arrange tiles so that the ball can go to the end tile, made completely with JavaFX
+In this game you try to arrange the tiles so that the ball can roll from the starting tile to the end tile. It is made using the javaFX GUI library.

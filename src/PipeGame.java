@@ -1,7 +1,6 @@
 /*
  *
- * NAME: Yiğit Tuncer, STUDENT ID: 150121073
- * NAME: ARDACAN ÖZENER, STUDENT ID: 150120026
+ *  Made by: Yiğit Tuncer, Ardacan Özener
  *
  */
 
